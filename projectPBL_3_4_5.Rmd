@@ -11,19 +11,21 @@ knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
 
 # TODO: go through chapter 8 for analysis!
 
-## 1: read data
+## 1: Read Data
 
-# TODO: make table out of this!
- reference         25°C  0min
- mild heat shock   37°C  10min 30min
- severe heat shock 42°C  10min 30min
+Description       | Temperature | Time(s)
+----------------- | ----------- | -------
+Reference         | 25°C        | 0 min
+Mild heat shock   | 37°C        | 10 min, 30 min
+Severe heat shock | 42°C        | 10 min, 30 min
 
- reference/wildtype
- KO: hsf1
- KO: msn2/4
- KO: hsf1 and msn2/4 (double)
+Yeast types:
+* Reference/Wildtype
+* Knockdown: HSF1
+* Knockout: MSN2/4
+* Knockdown & Knockout: HSF1 and MSN2/4 (double)
 
- 3 samples of each condition
+$\to$ 3 replicates of each condition
 
 
 ```{r}
@@ -36,63 +38,68 @@ names(flat_file) <- c("Regulator_systematic", "Regulator_standard",
                       "Id", "Date", "Environment", "Regulation", "Type", "Method")
 ```
 
-## Get to know data
+## Get to Know the Data
 
-First of all, we looked at the data including the mapping in order to get a basic
-understanding of the data. \newline
+First of all, we looked at the data including the mapping in order to get a basic understanding of the data.
 
-### difference KO and KD 
+### Difference between KO and KD 
 
-"The key difference between gene knockout and knockdown is that the gene knockout is a technique where the gene of interest is completely removed (inoperative state) to study of functions of the gene while gene knockdown is another technique where the gene of interest is silenced to investigate the role of the particular gene in a biological system." - https://www.differencebetween.com/difference-between-gene-knockout-and-knockdown/
+"The **key difference** between gene knockout and knockdown is that the **gene knockout is a technique where the gene of interest is completely removed (inoperative state)** to study of functions of the gene while **gene knockdown is another technique where the gene of interest is silenced** to investigate the role of the particular gene in a biological system." - [Difference Between Gene Knockout and Knockdown](https://www.differencebetween.com/difference-between-gene-knockout-and-knockdown/)
 
-### observations of data
+### Observations on Our Data
 
 * MSN2/4 is always KO
 * HSF1 is always KD
-* Wildtype -> without any KO/KD
-* double -> MSN2/4 & HSF1 both KO/KD
-* temperature in °C 
-* for each condition and strain 3 replicates
-* 25°C / 37°C / 42°C after certain times (o min for 25°C; 10/30 min for heatshock)
-* gene expression data for each gene
-* flat file for interactions
+* Wildtype $\to$ without any KO/KD
+* Double $\to$ MSN2/4 & HSF1 both KO/KD
+* Temperature in °C 
+* For each condition and strain: 3 replicates
+* 25°C / 37°C / 42°C after certain times (0 min for 25°C; 10/30 min for heatshock)
+* Gene expression data for each gene
+* Flat file for interactions
 
-### get an impression of HSF1 and MSN2/4
+### Get an Impression of HSF1 and MSN2/4
 
 #### HSF1
 
-"Trimeric heat shock transcription factor; activates multiple genes in response to highly diverse stresses and transient intracellular acidification; recognizes variable heat shock elements (HSEs) consisting of inverted NGAAN repeats; monitors translational status of cell through an RQC (Ribosomal Quality Control)-mediated translation-stress signal; involved in diauxic shift; posttranslationally regulated; human homolog HSF1 with linker region mutations can complement yeast hsf1 mutant" - description of yeastgenome.org (https://www.yeastgenome.org/locus/S000003041)
+"Trimeric heat shock transcription factor; activates multiple genes in response to highly diverse stresses and transient intracellular acidification; recognizes variable heat shock elements (HSEs) consisting of inverted NGAAN repeats; monitors translational status of cell through an RQC (Ribosomal Quality Control)-mediated translation-stress signal; involved in diauxic shift; posttranslationally regulated; human homolog HSF1 with linker region mutations can complement yeast hsf1 mutant" -- [Description of HSF1 / YGL073W in SGD](https://www.yeastgenome.org/locus/S000003041)
 
 #### MSN2 
 
-"Stress-responsive transcriptional activator; activated in stochastic pulses of nuclear localization in response to various stress conditions; binds DNA at stress response elements of responsive genes; light sensing pathway component that accumulates in the nucleus in response to blue light; relative distribution to nucleus increases upon DNA replication stress" - description of yeastgenome.org (https://www.yeastgenome.org/locus/S000004640)
+"Stress-responsive transcriptional activator; activated in stochastic pulses of nuclear localization in response to various stress conditions; binds DNA at stress response elements of responsive genes; light sensing pathway component that accumulates in the nucleus in response to blue light; relative distribution to nucleus increases upon DNA replication stress" -- [Description of MSN2 / YMR037C in SGD](https://www.yeastgenome.org/locus/S000004640)
 
 #### MSN4
 
-"Stress-responsive transcriptional activator; activated in stochastic pulses of nuclear localization in response to various stress conditions; binds DNA at stress response elements of responsive genes, inducing gene expression; involved in diauxic shift" - description of yeastgenome.org (https://www.yeastgenome.org/locus/S000001545)
+"Stress-responsive transcriptional activator; activated in stochastic pulses of nuclear localization in response to various stress conditions; binds DNA at stress response elements of responsive genes, inducing gene expression; involved in diauxic shift" -- [Description of MSN4 / YKL062W in SGD](https://www.yeastgenome.org/locus/S000001545)
 
-#### Diauxic shift - short explanation
+#### Diauxic Shift - Short Explanation
 
-# TODO: add short description
+"The switch from rapid fermentative growth in the presence of a rich carbon source to slower exponential growth by aerobic respiration using ethanol once the preferred carbon source has been exhausted." -- [Description of diauxic shift in SGD](https://www.yeastgenome.org/keyword/diauxic_shift)
 
-### interaction overview with HSF1 & MSN2/4
+---
 
-filter flat file for interactions with HSF1 and MSN2/4 and create a graph \newLine
+"A diauxic shift occurs when a microorganism is grown in a batch culture with two substrates. Rather than metabolizing the two available sugars simultaneously, microbial cells commonly consume them in a sequential pattern, resulting in two separate growth phases.
+
+When growing Saccharomyces cerevisiae with glucose and plenty of aeration, the diauxic growth pattern is commonly observed in a batch culture. During the first growth phase, when there is plenty of glucose and oxygen available, the yeast cells prefer glucose fermentation to aerobic respiration (crabtree effect). After glucose is depleted, the fermentation product ethanol is oxidised in a noticeably slower second growth phase, if oxygen is available." -- [Diauxic shift on Labster Theory](https://theory.labster.com/diauxic-shift/)
+
+![Typical growth curve of yeast in high glucose substrate.\nImage Source: https://theory.labster.com/diauxic-shift/](https://s3-us-west-2.amazonaws.com/labster/wiki/media/Growth_phase1.jpg)
+
+### Interaction Overview with HSF1 & MSN2/4
+
+filter flat file for interactions with HSF1 and MSN2/4 and create a graph
 
 Look at Felix's code in moodle
 
-### analysis: heatmap 
+### Analysis: Heatmap 
 
-To get an overview of the data, we will create a heatmap in which we look for 
-the interactors with MSN2/4 and HSF1.
+To get an overview of the data, we will create a heatmap in which we look for the interactors with MSN2/4 and HSF1.
 
-
-# TODO: create Heatmap -> filter: flatfile for interactors -> those in complex data for heatmap
+# TODO: create Heatmap $\to$ filter: flatfile for interactors $\to$ those in complex data for heatmap
 ```{r}
 
 ```
 
-## Observations of heatmap
+#### Observations of heatmap
 
 # TODO: what can we see in the heatmap, what sticks out?
 
@@ -101,7 +108,7 @@ the interactors with MSN2/4 and HSF1.
 # TODO: do the plot
 -> plot everything (facetwrap?) scatter to plot conditions against each other \newLine 
 
-### Use DESeq2 
+## Use DESeq2 
 
 First of all, we installed the packages needed to use the tool.
 
@@ -116,11 +123,11 @@ Afterwards, we searched for some tutorials for how to use it. \newLine
 
 For DEseq2 "non-normalized sequence read counts at either the gene or transcript level" (https://genviz.org/module-04-expression/0004/02/01/DifferentialExpression/) can be analyzed. Hence, we can use the package to analyze our complex_yeast_heatshock data. \newLine
 
-Then we used the Help of R and looked for "DEseq2" to find relevant functions for our data. We then saw the function "DEseqDataSetFromMatrix()" which might be useful to read in our data-frame. In the next code chunk we will try soem things with that.
+Then we used the Help of R and looked for "DEseq2" to find relevant functions for our data. We then saw the function "DEseqDataSetFromMatrix()" which might be useful to read in our data-frame. In the next code chunk we will try some things with that.
 
 # TODO: try out DEseq functions and analysis
 
--> plot significant foldchanges , alpha _ 0.01 + do correction (multiple testing correction) \newLine
+$\to$ plot significant foldchanges , alpha _ 0.01 + do correction (multiple testing correction) \newLine
 
 FOR THAT: look at HUBER chapter 8
 
@@ -128,22 +135,42 @@ FOR THAT: look at HUBER chapter 8
 
 ```
 
-## final results in cytoscape (PART 5)
+## Final Results in Cytoscape (PART 5)
 
 # TODO: think of a graph to show here after the other analysis are done
 
-## discuss topics of chapter 13 in HSMB
+## Discuss topics of chapter 13 in HSMB
 
-# TODO: discuss prominent points of the chapter (only list for different criteria)
+### limitations of the outset
 
--> only 3 replicates, no idea about bias, ... (meta analysis)
+Since we didn't execute the experiment by ourselves, we don't have any idea about what limitations there might have been or what side effects could be there. Hence, we cannot take that into consideration but we could compare our findings to common findings on the internet/in papers.
 
+### biased data
 
+As mentioned before, we do not know about any biases that might appear. Nevertheless, the experiment was performed on yeast and the data was probably collected in a lab and it's not too hard to control the temperature with the needed tools. We do not know about the knockouts/Knockdowns which is why we are careful with our findings and look for plausibility of them.
 
+### number of replicates
 
+We only got 3 replicates of each condition which would definitely not be enough if we actually wanted to proof new findings. But it should be enough for us if we want to learn about the analysis of data and can look up other resources.
 
+```{r}
+# eg compare two conditions
+mean1 <- mean(complex_yeast_heatshock$`25_0_Wildtype_r1`) + mean(complex_yeast_heatshock$`25_0_Wildtype_r2`) + mean(complex_yeast_heatshock$`25_0_Wildtype_r3`)
+mean1 <- mean1/3
+mean2 <- mean(complex_yeast_heatshock$`42_30_Double.KD/KO_r1`) + mean(complex_yeast_heatshock$`42_30_Double.KD/KO_r2`) + mean(complex_yeast_heatshock$`42_30_Double.KD/KO_r3`)
+mean2 <- mean2/3
+library("pwr")
+str(pwr.t.test)
+# two sample t test 
+differenceMean = mean1/mean2
+# calculates power we currently have
+pwr.t.test(power = NULL, n=3, sig.level = 0.01, type = "two.sample", d = differenceMean)
 
+# calculates n needed for power of 0.8
+pwr.t.test(power = 0.8, n = NULL,  sig.level = 0.01, type = "two.sample", d = differenceMean)
+```
+As shown in the previous code chunk, the power when comparing two conditions of our data is only ca. 0.041 . If we want a power over 0.8 we would need 24 samples for each condition.
 
+### False discovery rate 
 
-
-
+In order to control the false discovery rate, one should use multiple testing correction to find actually significant data. 
