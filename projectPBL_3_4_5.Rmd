@@ -9,6 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
 ```
 
+# TODO: go through chapter 8 for analysis!
+
 ## 1: read data
 
 # TODO: make table out of this!
@@ -19,7 +21,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
  reference/wildtype
  KO: hsf1
  KO: msn2/4
- KO: hsf1 and msn2/4
+ KO: hsf1 and msn2/4 (double)
 
  3 samples of each condition
 
@@ -33,4 +35,115 @@ names(flat_file) <- c("Regulator_systematic", "Regulator_standard",
                       "Target_systematic", "Target_standard",
                       "Id", "Date", "Environment", "Regulation", "Type", "Method")
 ```
+
+## Get to know data
+
+First of all, we looked at the data including the mapping in order to get a basic
+understanding of the data. \newline
+
+### difference KO and KD 
+
+"The key difference between gene knockout and knockdown is that the gene knockout is a technique where the gene of interest is completely removed (inoperative state) to study of functions of the gene while gene knockdown is another technique where the gene of interest is silenced to investigate the role of the particular gene in a biological system." - https://www.differencebetween.com/difference-between-gene-knockout-and-knockdown/
+
+### observations of data
+
+* MSN2/4 is always KO
+* HSF1 is always KD
+* Wildtype -> without any KO/KD
+* double -> MSN2/4 & HSF1 both KO/KD
+* temperature in °C 
+* for each condition and strain 3 replicates
+* 25°C / 37°C / 42°C after certain times (o min for 25°C; 10/30 min for heatshock)
+* gene expression data for each gene
+* flat file for interactions
+
+### get an impression of HSF1 and MSN2/4
+
+#### HSF1
+
+"Trimeric heat shock transcription factor; activates multiple genes in response to highly diverse stresses and transient intracellular acidification; recognizes variable heat shock elements (HSEs) consisting of inverted NGAAN repeats; monitors translational status of cell through an RQC (Ribosomal Quality Control)-mediated translation-stress signal; involved in diauxic shift; posttranslationally regulated; human homolog HSF1 with linker region mutations can complement yeast hsf1 mutant" - description of yeastgenome.org (https://www.yeastgenome.org/locus/S000003041)
+
+#### MSN2 
+
+"Stress-responsive transcriptional activator; activated in stochastic pulses of nuclear localization in response to various stress conditions; binds DNA at stress response elements of responsive genes; light sensing pathway component that accumulates in the nucleus in response to blue light; relative distribution to nucleus increases upon DNA replication stress" - description of yeastgenome.org (https://www.yeastgenome.org/locus/S000004640)
+
+#### MSN4
+
+"Stress-responsive transcriptional activator; activated in stochastic pulses of nuclear localization in response to various stress conditions; binds DNA at stress response elements of responsive genes, inducing gene expression; involved in diauxic shift" - description of yeastgenome.org (https://www.yeastgenome.org/locus/S000001545)
+
+#### Diauxic shift - short explanation
+
+# TODO: add short description
+
+### interaction overview with HSF1 & MSN2/4
+
+filter flat file for interactions with HSF1 and MSN2/4 and create a graph \newLine
+
+Look at Felix's code in moodle
+
+### analysis: heatmap 
+
+To get an overview of the data, we will create a heatmap in which we look for 
+the interactors with MSN2/4 and HSF1.
+
+
+# TODO: create Heatmap -> filter: flatfile for interactors -> those in complex data for heatmap
+```{r}
+
+```
+
+## Observations of heatmap
+
+# TODO: what can we see in the heatmap, what sticks out?
+
+### Plot for foldchanges with DEseq2 
+
+# TODO: do the plot
+-> plot everything (facetwrap?) scatter to plot conditions against each other \newLine 
+
+### Use DESeq2 
+
+First of all, we installed the packages needed to use the tool.
+
+```{r}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("DESeq2")
+```
+
+Afterwards, we searched for some tutorials for how to use it. \newLine
+
+For DEseq2 "non-normalized sequence read counts at either the gene or transcript level" (https://genviz.org/module-04-expression/0004/02/01/DifferentialExpression/) can be analyzed. Hence, we can use the package to analyze our complex_yeast_heatshock data. \newLine
+
+Then we used the Help of R and looked for "DEseq2" to find relevant functions for our data. We then saw the function "DEseqDataSetFromMatrix()" which might be useful to read in our data-frame. In the next code chunk we will try soem things with that.
+
+# TODO: try out DEseq functions and analysis
+
+-> plot significant foldchanges , alpha _ 0.01 + do correction (multiple testing correction) \newLine
+
+FOR THAT: look at HUBER chapter 8
+
+```{r}
+
+```
+
+## final results in cytoscape (PART 5)
+
+# TODO: think of a graph to show here after the other analysis are done
+
+## discuss topics of chapter 13 in HSMB
+
+# TODO: discuss prominent points of the chapter (only list for different criteria)
+
+-> only 3 replicates, no idea about bias, ... (meta analysis)
+
+
+
+
+
+
+
+
+
 
