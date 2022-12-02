@@ -139,7 +139,7 @@ FOR THAT: look at HUBER chapter 8
 
 # TODO: think of a graph to show here after the other analysis are done
 
-## Discuss topics of chapter 13 in HSMB
+## Discuss topics of chapter 13 in MSMB
 
 ### limitations of the outset
 
