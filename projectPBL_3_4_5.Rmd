@@ -1,0 +1,36 @@
+---
+title: "projectPBL_part3_4_5"
+author: "Yin Lei & Lisa Spindler"
+date: "2022-12-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
+```
+
+## 1: read data
+
+# TODO: make table out of this!
+ reference         25°C  0min
+ mild heat shock   37°C  10min 30min
+ severe heat shock 42°C  10min 30min
+
+ reference/wildtype
+ KO: hsf1
+ KO: msn2/4
+ KO: hsf1 and msn2/4
+
+ 3 samples of each condition
+
+
+```{r}
+library(tidyverse)
+complex_yeast_heatshock <- read_tsv("complex_yeast_heatshock.tsv")
+sample_mapping <- read_tsv("sample_mapping.tsv")
+flat_file <- read_tsv("yeastract2019-flat-file.tsv", col_names = F)
+names(flat_file) <- c("Regulator_systematic", "Regulator_standard",
+                      "Target_systematic", "Target_standard",
+                      "Id", "Date", "Environment", "Regulation", "Type", "Method")
+```
+
