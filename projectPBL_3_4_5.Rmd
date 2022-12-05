@@ -164,12 +164,12 @@ str(pwr.t.test)
 # two sample t test 
 differenceMean = mean1/mean2
 # calculates power we currently have
-pwr.t.test(power = NULL, n=3, sig.level = 0.01, type = "two.sample", d = differenceMean)
+pwr.t.test(power = NULL, n=3, sig.level = 0.01, type = "two.sample", d = 2)
 
 # calculates n needed for power of 0.8
-pwr.t.test(power = 0.8, n = NULL,  sig.level = 0.01, type = "two.sample", d = differenceMean)
+pwr.t.test(power = 0.8, n = NULL,  sig.level = 0.01, type = "two.sample", d = 2)
 ```
-As shown in the previous code chunk, the power when comparing two conditions of our data is only ca. 0.041 . If we want a power over 0.8 we would need 24 samples for each condition.
+As shown in the previous code chunk, the power when comparing two conditions of our data is only ca. 0.16 when we want to observe genes expressed twice or half as much. If we want a power over 0.8 to observe prominent changes we would need 8 samples for each condition.
 
 ### False discovery rate 
 
