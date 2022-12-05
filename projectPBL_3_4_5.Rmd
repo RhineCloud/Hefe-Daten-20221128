@@ -147,7 +147,7 @@ Since we didn't execute the experiment by ourselves, we don't have any idea abou
 
 ### biased data
 
-As mentioned before, we do not know about any biases that might appear. Nevertheless, the experiment was performed on yeast and the data was probably collected in a lab and it's not too hard to control the temperature with the needed tools. We do not know about the knockouts/Knockdowns which is why we are careful with our findings and look for plausibility of them.
+As mentioned before, we do not know about any biases that might appear. Nevertheless, the experiment was performed on yeast and the data was probably collected in a lab and it's not too hard to control the temperature with the needed tools. Also, the measurements were taken in different groups and not all on the same probe which also makes it better to compare the overall readcount per replicate and condition. Additionally, we do not know about the knockouts/Knockdowns which is why we are careful with our findings and look for plausibility of them.
 
 ### number of replicates
 
@@ -174,3 +174,9 @@ As shown in the previous code chunk, the power when comparing two conditions of 
 ### False discovery rate 
 
 In order to control the false discovery rate, one should use multiple testing correction to find actually significant data. 
+
+### unit vs fold changes? (chapter 13)
+
+
+
+
