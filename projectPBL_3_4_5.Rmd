@@ -175,7 +175,9 @@ As shown in the previous code chunk, the power when comparing two conditions of 
 
 In order to control the false discovery rate, one should use multiple testing correction to find actually significant data. 
 
-### unit vs fold changes? (chapter 13)
+### Units vs fold changes
+
+Since we often cannot use standardized units in biology, we have to be careful in comparing the data. As we use read counts, we should compare the variances in the different samples and measurements in order to make them comparable and to not have findings based on overall differences in the data due to the method of measuring etc. If an overall difference in the counts can be identified, one should use transformations to observe actual differentially expressed data and to not be misleaded. 
 
 
 

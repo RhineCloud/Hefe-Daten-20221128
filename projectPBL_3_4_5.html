@@ -564,9 +564,11 @@ papers.</p>
 <p>As mentioned before, we do not know about any biases that might
 appear. Nevertheless, the experiment was performed on yeast and the data
 was probably collected in a lab and it’s not too hard to control the
-temperature with the needed tools. We do not know about the
-knockouts/Knockdowns which is why we are careful with our findings and
-look for plausibility of them.</p>
+temperature with the needed tools. Also, the measurements were taken in
+different groups and not all on the same probe which also makes it
+better to compare the overall readcount per replicate and condition.
+Additionally, we do not know about the knockouts/Knockdowns which is why
+we are careful with our findings and look for plausibility of them.</p>
 </div>
 <div id="number-of-replicates" class="section level3">
 <h3>number of replicates</h3>
@@ -586,37 +588,49 @@ str(pwr.t.test)</code></pre>
 <pre class="r"><code># two sample t test 
 differenceMean = mean1/mean2
 # calculates power we currently have
-pwr.t.test(power = NULL, n=3, sig.level = 0.01, type = &quot;two.sample&quot;, d = differenceMean)</code></pre>
+pwr.t.test(power = NULL, n=3, sig.level = 0.01, type = &quot;two.sample&quot;, d = 2)</code></pre>
 <pre><code>## 
 ##      Two-sample t test power calculation 
 ## 
 ##               n = 3
-##               d = 1.0318
+##               d = 2
 ##       sig.level = 0.01
-##           power = 0.04169848
+##           power = 0.156856
 ##     alternative = two.sided
 ## 
 ## NOTE: n is number in *each* group</code></pre>
 <pre class="r"><code># calculates n needed for power of 0.8
-pwr.t.test(power = 0.8, n = NULL,  sig.level = 0.01, type = &quot;two.sample&quot;, d = differenceMean)</code></pre>
+pwr.t.test(power = 0.8, n = NULL,  sig.level = 0.01, type = &quot;two.sample&quot;, d = 2)</code></pre>
 <pre><code>## 
 ##      Two-sample t test power calculation 
 ## 
-##               n = 23.65213
-##               d = 1.0318
+##               n = 7.66057
+##               d = 2
 ##       sig.level = 0.01
 ##           power = 0.8
 ##     alternative = two.sided
 ## 
 ## NOTE: n is number in *each* group</code></pre>
 <p>As shown in the previous code chunk, the power when comparing two
-conditions of our data is only ca. 0.041 . If we want a power over 0.8
-we would need 24 samples for each condition.</p>
+conditions of our data is only ca. 0.16 when we want to observe genes
+expressed twice or half as much. If we want a power over 0.8 to observe
+prominent changes we would need 8 samples for each condition.</p>
 </div>
 <div id="false-discovery-rate" class="section level3">
 <h3>False discovery rate</h3>
 <p>In order to control the false discovery rate, one should use multiple
 testing correction to find actually significant data.</p>
+</div>
+<div id="units-vs-fold-changes" class="section level3">
+<h3>Units vs fold changes</h3>
+<p>Since we often cannot use standardized units in biology, we have to
+be careful in comparing the data. As we use read counts, we should
+compare the variances in the different samples and measurements in order
+to make them comparable and to not have findings based on overall
+differences in the data due to the method of measuring etc. If an
+overall difference in the counts can be identified, one should use
+transformations to observe actual differentially expressed data and to
+not be misleaded.</p>
 </div>
 </div>
 </div>
