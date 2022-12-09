@@ -125,15 +125,83 @@ For DEseq2 "non-normalized sequence read counts at either the gene or transcript
 
 Then we used the Help of R and looked for "DEseq2" to find relevant functions for our data. We then saw the function "DEseqDataSetFromMatrix()" which might be useful to read in our data-frame. In the next code chunk we will try some things with that.
 
-# TODO: try out DEseq functions and analysis
+## DESeq and foldChanges (Huber chapter 8)
 
-$\to$ plot significant foldchanges , alpha _ 0.01 + do correction (multiple testing correction) \newLine
+For the analysis, we wil analyze the data according to the temperature. For that we had to transfrom the data into the correct format via DESeqDataFromMatrix and could then use the DESeq-method of the package in order to create some interesting plots and get a list of genes and their foldchanges throughout the different conditions.
 
-FOR THAT: look at HUBER chapter 8
 
 ```{r}
+library(DESeq2)
+library(tidyverse)
+
+# set proper col and rownames
+countData <- complex_yeast_heatshock %>% column_to_rownames(var= "gene_id")
+colData <- sample_mapping %>% column_to_rownames(var = "sample")
+
+# convert object
+deseqData <- DESeqDataSetFromMatrix(countData = countData[,rownames(colData)], colData = colData, ~temperature)
+class(deseqData)
+is(deseqData, "SummarizedExperiment")
+
+# get results from Deseq
+res <- DESeq(deseqData)
+result <- results(res)
+
+res[order(result$padj), ] |> head()
 
 ```
+
+### histogram of p-values 
+
+```{r}
+ggplot(as(result, "data.frame"), aes(x = pvalue)) +
+  geom_histogram(binwidth = 0.02, fill = "Royalblue", boundary = 0)
+```
+
+### MA plot
+
+```{r}
+plotMA(res, ylim = c(-0.75, 0.75))
+```
+
+### PCA plot
+
+```{r}
+pas_rlog = rlogTransformation(res)
+plotPCA(pas_rlog, intgroup=c("temperature")) + coord_fixed()
+```
+
+### Heatmap out of DESeqData results
+
+```{r}
+library("pheatmap")
+select = order(rowMeans(assay(pas_rlog)), decreasing = TRUE)[1:30]
+pheatmap( assay(pas_rlog)[select, ],
+     scale = "row", fontsize = 5, main = "Heatmap of regularized log transformed data of the top 30 genes")
+```
+
+### calculated fold changes of DESeq result in dataframe (summary)
+
+```{r}
+tableResult <- as.data.frame(result)
+summary(tableResult)
+```
+
+### plots with threshhold for the results of DESeq
+
+```{r}
+par(mfrow = c(4, 1), mar = c(2, 2, 1, 1))
+myMA = function(h, v, theta = 0.5) {
+  plotMA(res, lfcThreshold = theta, altHypothesis = h,
+         ylim = c(-0.75, 0.75), main = h)
+  abline(h = v * theta, col = "dodgerblue", lwd = 2)
+}
+myMA("greaterAbs", c(-0.25, 0.25))
+myMA("lessAbs",    c(-0.25, 0.25))
+myMA("greater",          0.25)
+myMA("less",         -0.25  )
+```
+
 
 ## Final Results in Cytoscape (PART 5)
 
