@@ -6,12 +6,12 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, cache = T)
 ```
 
 # TODO: go through chapter 8 for analysis!
 
-## 1: Read Data
+## Read Data
 
 Description       | Temperature | Time(s)
 ----------------- | ----------- | -------
@@ -20,6 +20,7 @@ Mild heat shock   | 37°C        | 10 min, 30 min
 Severe heat shock | 42°C        | 10 min, 30 min
 
 Yeast types:
+
 * Reference/Wildtype
 * Knockdown: HSF1
 * Knockout: MSN2/4
@@ -38,15 +39,16 @@ names(flat_file) <- c("Regulator_systematic", "Regulator_standard",
                       "Id", "Date", "Environment", "Regulation", "Type", "Method")
 ```
 
-## Get to Know the Data
+## Get to know the data
 
 First of all, we looked at the data including the mapping in order to get a basic understanding of the data.
 
 ### Difference between KO and KD 
 
-"The **key difference** between gene knockout and knockdown is that the **gene knockout is a technique where the gene of interest is completely removed (inoperative state)** to study of functions of the gene while **gene knockdown is another technique where the gene of interest is silenced** to investigate the role of the particular gene in a biological system." - [Difference Between Gene Knockout and Knockdown](https://www.differencebetween.com/difference-between-gene-knockout-and-knockdown/)
+> "The **key difference** between gene knockout and knockdown is that the **gene knockout is a technique where the gene of interest is completely removed (inoperative state)** to study of functions of the gene while **gene knockdown is another technique where the gene of interest is silenced** to investigate the role of the particular gene in a biological system."  
+---[Difference Between Gene Knockout and Knockdown | Compare the Difference Between Similar Terms](https://www.differencebetween.com/difference-between-gene-knockout-and-knockdown/)
 
-### Observations on Our Data
+### Observations on our data
 
 * MSN2/4 is always KO
 * HSF1 is always KD
@@ -58,33 +60,54 @@ First of all, we looked at the data including the mapping in order to get a basi
 * Gene expression data for each gene
 * Flat file for interactions
 
-### Get an Impression of HSF1 and MSN2/4
+### Get an impression of HSF1 and MSN2/4
 
 #### HSF1
 
-"Trimeric heat shock transcription factor; activates multiple genes in response to highly diverse stresses and transient intracellular acidification; recognizes variable heat shock elements (HSEs) consisting of inverted NGAAN repeats; monitors translational status of cell through an RQC (Ribosomal Quality Control)-mediated translation-stress signal; involved in diauxic shift; posttranslationally regulated; human homolog HSF1 with linker region mutations can complement yeast hsf1 mutant" -- [Description of HSF1 / YGL073W in SGD](https://www.yeastgenome.org/locus/S000003041)
+> "Trimeric heat shock transcription factor;
+> activates multiple genes in response to highly diverse stresses and transient intracellular acidification;
+> recognizes variable heat shock elements (HSEs) consisting of inverted NGAAN repeats;
+> monitors translational status of cell through an RQC (Ribosomal Quality Control)-mediated translation-stress signal;
+> involved in diauxic shift;
+> posttranslationally regulated;
+> human homolog HSF1 with linker region mutations can complement yeast hsf1 mutant" \
+---[Description of HSF1 / YGL073W | SGD](https://www.yeastgenome.org/locus/S000003041)
 
 #### MSN2 
 
-"Stress-responsive transcriptional activator; activated in stochastic pulses of nuclear localization in response to various stress conditions; binds DNA at stress response elements of responsive genes; light sensing pathway component that accumulates in the nucleus in response to blue light; relative distribution to nucleus increases upon DNA replication stress" -- [Description of MSN2 / YMR037C in SGD](https://www.yeastgenome.org/locus/S000004640)
+> "Stress-responsive transcriptional activator;
+> activated in stochastic pulses of nuclear localization in response to various stress conditions;
+> binds DNA at stress response elements of responsive genes;
+> light sensing pathway component that accumulates in the nucleus in response to blue light;
+> relative distribution to nucleus increases upon DNA replication stress" \
+---[Description of MSN2 / YMR037C | SGD](https://www.yeastgenome.org/locus/S000004640)
 
 #### MSN4
 
-"Stress-responsive transcriptional activator; activated in stochastic pulses of nuclear localization in response to various stress conditions; binds DNA at stress response elements of responsive genes, inducing gene expression; involved in diauxic shift" -- [Description of MSN4 / YKL062W in SGD](https://www.yeastgenome.org/locus/S000001545)
+> "Stress-responsive transcriptional activator;
+> activated in stochastic pulses of nuclear localization in response to various stress conditions;
+> binds DNA at stress response elements of responsive genes, inducing gene expression;
+> involved in diauxic shift" \
+---[Description of MSN4 / YKL062W | SGD](https://www.yeastgenome.org/locus/S000001545)
 
-#### Diauxic Shift - Short Explanation
+#### Diauxic shift - short explanation
 
-"The switch from rapid fermentative growth in the presence of a rich carbon source to slower exponential growth by aerobic respiration using ethanol once the preferred carbon source has been exhausted." -- [Description of diauxic shift in SGD](https://www.yeastgenome.org/keyword/diauxic_shift)
+> "The switch from rapid fermentative growth in the presence of a rich carbon source to slower exponential growth by aerobic respiration using ethanol once the preferred carbon source has been exhausted." \
+---[Description of diauxic shift | SGD](https://www.yeastgenome.org/keyword/diauxic_shift)
 
 ---
 
-"A diauxic shift occurs when a microorganism is grown in a batch culture with two substrates. Rather than metabolizing the two available sugars simultaneously, microbial cells commonly consume them in a sequential pattern, resulting in two separate growth phases.
+> "A diauxic shift occurs when a microorganism is grown in a batch culture with two substrates.
+> Rather than metabolizing the two available sugars simultaneously, microbial cells commonly consume them in a sequential pattern, resulting in two separate growth phases.
+> 
+> When growing Saccharomyces cerevisiae with glucose and plenty of aeration, the diauxic growth pattern is commonly observed in a batch culture.
+> During the first growth phase, when there is plenty of glucose and oxygen available, the yeast cells prefer glucose fermentation to aerobic respiration (crabtree effect).
+> After glucose is depleted, the fermentation product ethanol is oxidised in a noticeably slower second growth phase, if oxygen is available." \
+---[Diauxic shift - Labster Theory](https://theory.labster.com/diauxic-shift/)
 
-When growing Saccharomyces cerevisiae with glucose and plenty of aeration, the diauxic growth pattern is commonly observed in a batch culture. During the first growth phase, when there is plenty of glucose and oxygen available, the yeast cells prefer glucose fermentation to aerobic respiration (crabtree effect). After glucose is depleted, the fermentation product ethanol is oxidised in a noticeably slower second growth phase, if oxygen is available." -- [Diauxic shift on Labster Theory](https://theory.labster.com/diauxic-shift/)
+![Typical growth curve of yeast in high glucose substrate. | Image Source: [Diauxic shift - Labster Theory](https://theory.labster.com/diauxic-shift/)](https://s3-us-west-2.amazonaws.com/labster/wiki/media/Growth_phase1.jpg)
 
-![Typical growth curve of yeast in high glucose substrate.\nImage Source: https://theory.labster.com/diauxic-shift/](https://s3-us-west-2.amazonaws.com/labster/wiki/media/Growth_phase1.jpg)
-
-### Interaction Overview with HSF1 & MSN2/4
+### Interaction overview with HSF1 & MSN2/4
 
 filter flat file for interactions with HSF1 and MSN2/4 and create a graph
 
@@ -103,10 +126,10 @@ To get an overview of the data, we will create a heatmap in which we look for th
 
 # TODO: what can we see in the heatmap, what sticks out?
 
-### Plot for foldchanges with DEseq2 
+### Plot for fold changes with DEseq2 
 
 # TODO: do the plot
--> plot everything (facetwrap?) scatter to plot conditions against each other \newLine 
+$\to$ plot everything (facetwrap?) scatter to plot conditions against each other
 
 ## Use DESeq2 
 
@@ -119,15 +142,19 @@ if (!require("BiocManager", quietly = TRUE))
 BiocManager::install("DESeq2")
 ```
 
-Afterwards, we searched for some tutorials for how to use it. \newLine
+Afterwards, we searched for some tutorials for how to use it.
 
-For DEseq2 "non-normalized sequence read counts at either the gene or transcript level" (https://genviz.org/module-04-expression/0004/02/01/DifferentialExpression/) can be analyzed. Hence, we can use the package to analyze our complex_yeast_heatshock data. \newLine
+For DEseq2 "non-normalized sequence read counts at either the gene or transcript level" [(Differential expression with DEseq2 | Griffith Lab)](https://genviz.org/module-04-expression/0004/02/01/DifferentialExpression/) can be analyzed.
+Hence, we can use the package to analyze our `complex_yeast_heatshock` data.
 
-Then we used the Help of R and looked for "DEseq2" to find relevant functions for our data. We then saw the function "DEseqDataSetFromMatrix()" which might be useful to read in our data-frame. In the next code chunk we will try some things with that.
+We used the Help window in RStudio and looked for "DEseq2" to find relevant functions for our data.
+There we saw the function `DEseqDataSetFromMatrix()` which might be useful to read in our data-frame.
+In the next code chunk we will try some things with that.
 
-## DESeq and foldChanges (Huber chapter 8)
+## DESeq and Fold Changes (Holmes & Huber, Chapter 8)
 
-For the analysis, we wil analyze the data according to the temperature. For that we had to transfrom the data into the correct format via DESeqDataFromMatrix and could then use the DESeq-method of the package in order to create some interesting plots and get a list of genes and their foldchanges throughout the different conditions.
+For the analysis, we will analyze the data according to the temperature.
+For that we had to transform the data into the correct format via `DESeqDataFromMatrix()` and could then use the DESeq-method of the package to create some interesting plots and get a list of genes and their fold changes throughout the different conditions.
 
 
 ```{r}
@@ -139,11 +166,12 @@ countData <- complex_yeast_heatshock %>% column_to_rownames(var= "gene_id")
 colData <- sample_mapping %>% column_to_rownames(var = "sample")
 
 # convert object
-deseqData <- DESeqDataSetFromMatrix(countData = countData[,rownames(colData)], colData = colData, ~temperature)
+deseqData <- DESeqDataSetFromMatrix(countData = countData[, rownames(colData)],
+                                    colData = colData, ~temperature)
 class(deseqData)
 is(deseqData, "SummarizedExperiment")
 
-# get results from Deseq
+# get results from DESeq
 res <- DESeq(deseqData)
 result <- results(res)
 
@@ -151,7 +179,7 @@ res[order(result$padj), ] |> head()
 
 ```
 
-### histogram of p-values 
+### Histogram of p-values 
 
 ```{r}
 ggplot(as(result, "data.frame"), aes(x = pvalue)) +
@@ -167,86 +195,91 @@ plotMA(res, ylim = c(-0.75, 0.75))
 ### PCA plot
 
 ```{r}
-pas_rlog = rlogTransformation(res)
-plotPCA(pas_rlog, intgroup=c("temperature")) + coord_fixed()
+pas_rlog <- rlogTransformation(res)
+plotPCA(pas_rlog, intgroup = c("temperature")) + coord_fixed()
 ```
 
 ### Heatmap out of DESeqData results
 
 ```{r}
 library("pheatmap")
-select = order(rowMeans(assay(pas_rlog)), decreasing = TRUE)[1:30]
-pheatmap( assay(pas_rlog)[select, ],
-     scale = "row", fontsize = 5, main = "Heatmap of regularized log transformed data of the top 30 genes")
+select <- order(rowMeans(assay(pas_rlog)), decreasing = TRUE)[1:30]
+pheatmap(assay(pas_rlog)[select, ], scale = "row", fontsize = 5,
+         main = "Heatmap of regularized log transformed data of the top 30 genes")
 ```
 
-### calculated fold changes of DESeq result in dataframe (summary)
+### Calculated fold changes of DESeq result in dataframe (summary)
 
 ```{r}
 tableResult <- as.data.frame(result)
 summary(tableResult)
 ```
 
-### plots with threshhold for the results of DESeq
+### Plots with threshhold for the results of DESeq
 
 ```{r}
 par(mfrow = c(4, 1), mar = c(2, 2, 1, 1))
-myMA = function(h, v, theta = 0.5) {
+myMA <- function(h, v, theta = 0.5) {
   plotMA(res, lfcThreshold = theta, altHypothesis = h,
          ylim = c(-0.75, 0.75), main = h)
   abline(h = v * theta, col = "dodgerblue", lwd = 2)
 }
 myMA("greaterAbs", c(-0.25, 0.25))
 myMA("lessAbs",    c(-0.25, 0.25))
-myMA("greater",          0.25)
-myMA("less",         -0.25  )
+myMA("greater",             0.25)
+myMA("less",         -0.25)
 ```
-
 
 ## Final Results in Cytoscape (PART 5)
 
 # TODO: think of a graph to show here after the other analysis are done
 
-## Discuss topics of chapter 13 in MSMB
+## Discuss Topics of Holmes & Huber, Chapter 13
 
-### limitations of the outset
+### Limitations from the outset
 
-Since we didn't execute the experiment by ourselves, we don't have any idea about what limitations there might have been or what side effects could be there. Hence, we cannot take that into consideration but we could compare our findings to common findings on the internet/in papers.
+Since we didn't execute the experiment ourselves, we don't have any idea about what limitations there might have been or what side effects there could be.
+Hence, we cannot take that into consideration, but we could compare our findings to common findings on the Internet/in papers.
 
-### biased data
+### Biased data
 
-As mentioned before, we do not know about any biases that might appear. Nevertheless, the experiment was performed on yeast and the data was probably collected in a lab and it's not too hard to control the temperature with the needed tools. Also, the measurements were taken in different groups and not all on the same probe which also makes it better to compare the overall readcount per replicate and condition. Additionally, we do not know about the knockouts/Knockdowns which is why we are careful with our findings and look for plausibility of them.
+As mentioned before, we do not know about any biases that might appear.
+Nevertheless, the experiment was performed on yeast and the data was probably collected in a lab and it's not too hard to control the temperature with the needed tools.
+Also, the measurements were taken in different groups and not all on the same probe which also makes it better to compare the overall read count per replicate and condition.
+Additionally, we do not know about the knockouts/Knockdowns, which is why we are careful with our findings and look into their plausibility.
 
-### number of replicates
+### Number of replicates
 
-We only got 3 replicates of each condition which would definitely not be enough if we actually wanted to proof new findings. But it should be enough for us if we want to learn about the analysis of data and can look up other resources.
+We only have 3 replicates of each condition, which would definitely not be enough if we actually wanted to prove new findings.
+But it should be enough for us if the aim is to learn about data analysis methods and we can look things up with other resources.
 
 ```{r}
-# eg compare two conditions
+# e.g. compare two conditions
 mean1 <- mean(complex_yeast_heatshock$`25_0_Wildtype_r1`) + mean(complex_yeast_heatshock$`25_0_Wildtype_r2`) + mean(complex_yeast_heatshock$`25_0_Wildtype_r3`)
-mean1 <- mean1/3
+mean1 <- mean1 / 3
 mean2 <- mean(complex_yeast_heatshock$`42_30_Double.KD/KO_r1`) + mean(complex_yeast_heatshock$`42_30_Double.KD/KO_r2`) + mean(complex_yeast_heatshock$`42_30_Double.KD/KO_r3`)
-mean2 <- mean2/3
+mean2 <- mean2 / 3
+
 library("pwr")
 str(pwr.t.test)
-# two sample t test 
+# two sample t-test 
 differenceMean = mean1/mean2
-# calculates power we currently have
+# calculates the power we currently have
 pwr.t.test(power = NULL, n=3, sig.level = 0.01, type = "two.sample", d = 2)
 
-# calculates n needed for power of 0.8
+# calculates the n needed for a power of 0.8
 pwr.t.test(power = 0.8, n = NULL,  sig.level = 0.01, type = "two.sample", d = 2)
 ```
-As shown in the previous code chunk, the power when comparing two conditions of our data is only ca. 0.16 when we want to observe genes expressed twice or half as much. If we want a power over 0.8 to observe prominent changes we would need 8 samples for each condition.
+As shown in the previous code chunk, the power when comparing two conditions of our data is only ca. 0.16 when we want to observe genes expressed with a twofold change (twice or half as much).
+If we want a power over 0.8 to observe prominent changes we would need 8 samples for each condition.
 
 ### False discovery rate 
 
 In order to control the false discovery rate, one should use multiple testing correction to find actually significant data. 
 
-### Units vs fold changes
+### Units vs. fold changes
 
-Since we often cannot use standardized units in biology, we have to be careful in comparing the data. As we use read counts, we should compare the variances in the different samples and measurements in order to make them comparable and to not have findings based on overall differences in the data due to the method of measuring etc. If an overall difference in the counts can be identified, one should use transformations to observe actual differentially expressed data and to not be misleaded. 
-
-
-
-
+Since we often cannot use standardized units in biology, we have to be careful when comparing the data.
+As we use read counts, we should compare the variances in the different samples and measurements.
+This way, we can keep them comparable and prevent findings that are based on overall differences in the data due to the method of measuring or the like.
+If an overall difference in the counts can be identified, one should use transformations to observe actually differentially expressed data and avoid being misled.
