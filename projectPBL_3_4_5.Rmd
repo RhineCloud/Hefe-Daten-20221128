@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, cache = T)
+knitr::opts_chunk$set(echo = T, warning = F, message = F, cache = T)
 ```
 
 # TODO: go through chapter 8 for analysis!
@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, cache = T)
 ## Read Data
 
 Description       | Temperature | Time(s)
------------------ | ----------- | -------
+----------------- | ----------- | --------------
 Reference         | 25°C        | 0 min
 Mild heat shock   | 37°C        | 10 min, 30 min
 Severe heat shock | 42°C        | 10 min, 30 min
@@ -26,14 +26,18 @@ Yeast types:
 * Knockout: MSN2/4
 * Knockdown & Knockout: HSF1 and MSN2/4 (double)
 
-$\to$ 3 replicates of each condition
+$\implies$ 3 replicates of each condition
 
 
 ```{r}
 library(tidyverse)
+
+# read each file
 complex_yeast_heatshock <- read_tsv("complex_yeast_heatshock.tsv")
 sample_mapping <- read_tsv("sample_mapping.tsv")
-flat_file <- read_tsv("yeastract2019-flat-file.tsv", col_names = F)
+flat_file <- read_tsv("yeastract2019-flat-file.tsv", col_names = F, na = c("", "NA", "N/A"))
+
+# set column names for flat_file
 names(flat_file) <- c("Regulator_systematic", "Regulator_standard",
                       "Target_systematic", "Target_standard",
                       "Id", "Date", "Environment", "Regulation", "Type", "Method")
@@ -109,9 +113,134 @@ First of all, we looked at the data including the mapping in order to get a basi
 
 ### Interaction overview with HSF1 & MSN2/4
 
-filter flat file for interactions with HSF1 and MSN2/4 and create a graph
+```{r}
+# filter flat file for interactions of interest (i.e. involving HSF1 or MSN2/4)
+interactions <- flat_file %>%
+  filter(Regulator_standard == "HSF1" | Target_standard == "HSF1" |
+         Regulator_standard == "MSN2" | Target_standard == "MSN2" |
+         Regulator_standard == "MSN4" | Target_standard == "MSN4") %>%
+  select(Regulator_systematic, Regulator_standard,
+         Target_systematic, Target_standard, Regulation) %>%
+  mutate(Regulation = case_when(
+    Regulation == "Positive" ~  1,
+    Regulation == "Negative" ~ -1,
+    TRUE                     ~  0
+  ))
+```
 
-Look at Felix's code in moodle
+```{r, eval = F}
+library(RCy3)
+
+# directly create an interaction network from the data frame
+regulators <- interactions %>%
+  select(Regulator_systematic, Regulator_standard) %>%
+  distinct() %>%
+  rename(group = Regulator_systematic, id = Regulator_standard)
+targets <- interactions %>%
+  select(Target_systematic, Target_standard) %>%
+  distinct() %>%
+  rename(group = Target_systematic, id = Target_standard)
+nodes <- dplyr::union(regulators, targets)
+edges <- interactions %>%
+  select(Regulator_standard, Target_standard, Regulation) %>%
+  rename(source = Regulator_standard, target = Target_standard, weight = Regulation) %>%
+  distinct()
+
+createNetworkFromDataFrames(nodes, edges)
+setNodeColorBypass("HSF1", "#ffff00")
+setNodeColorBypass("MSN2", "#33ff00")
+setNodeColorBypass("MSN4", "#00ff33")
+layoutNetwork("kamada-kawai")
+saveSession("yeast_heatshock_interactions_from_df")
+exportImage("yeast_heatshock_interactions_from_df")
+```
+
+![Interactions with HSF1 (yellow) and MSN2/4 (green) in yeast.](yeast_heatshock_interactions_from_df.png)
+
+This has been fun, but let's try another approach, like in Felix's Yeastract example on Moodle:
+
+```{r, eval = F}
+library(igraph)
+
+cyto_in <- edges %>%
+  rename(V2 = source, V4 = target, reg = weight)
+
+# go through igraph for extra node/edge attributes
+gD <- igraph::simplify(igraph::graph.data.frame(cyto_in, directed = TRUE))
+igraph::vcount(gD)
+igraph::ecount(gD)
+degAll <- igraph::degree(gD, v = igraph::V(gD), mode = "all")
+
+betAll <- igraph::betweenness(gD, igraph::V(gD), directed = FALSE) /
+  (((igraph::vcount(gD) - 1) * (igraph::vcount(gD) - 2)) / 2)
+betAll.norm <- (betAll - min(betAll)) / (max(betAll) - min(betAll))
+rm(betAll)
+
+dsAll <- igraph::similarity.dice(gD, vids = igraph::V(gD), mode = "all")
+
+gD <- igraph::set.vertex.attribute(gD, "degree", index = igraph::V(gD), value = degAll)
+gD <- igraph::set.vertex.attribute(gD, "betweenness", index = igraph::V(gD), value = betAll.norm)
+
+F1 <- function(x) {
+  data.frame(SIM = dsAll[which(igraph::V(gD)$name == as.character(x$V2)),
+                         which(igraph::V(gD)$name == as.character(x$V4))])
+}
+cyto_in.ext <- plyr::ddply(cyto_in, .variables = c("V2", "V4", "reg"),
+                           function(x) data.frame(F1(x)))
+gD <- igraph::set.edge.attribute(gD, "weight", index = igraph::E(gD), value = 0)
+gD <- igraph::set.edge.attribute(gD, "similarity", index = igraph::E(gD), value = 0)
+
+for (i in 1:nrow(cyto_in.ext)) {
+  igraph::E(gD)[as.character(cyto_in.ext$V2) %--%
+                as.character(cyto_in.ext$V4)]$weight <- as.numeric(cyto_in.ext$reg)
+  igraph::E(gD)[as.character(cyto_in.ext$V2) %--%
+                as.character(cyto_in.ext$V4)]$similarity <- as.numeric(cyto_in.ext$SIM)
+}
+
+cyto_u <- unique(cyto_in[c("V2", "V4")])
+cyto_listed <- plyr::ddply(cyto_u, "V4", summarise,
+                           regulated_by = paste(sort(V2), collapse = ","), .drop = FALSE)
+
+igraph::V(gD)[cyto_listed$V4]$node_color <- cyto_listed$regulated_by
+
+igraph::V(gD)[unique(cyto_in$V2)]$node_color <- "regulator"
+
+igraph::V(gD)[unique(cyto_in$V4)]$node_shape <- "target"
+igraph::V(gD)[unique(cyto_in$V2)]$node_shape <- "regulator"
+
+createNetworkFromIgraph(gD)
+nodes <- getTableColumns(table = "node")
+layoutNetwork("kamada-kawai")
+
+setNodeColorMapping("node_color",
+                    c(NA, "regulator", "HSF1", "MSN2", "MSN4",
+                      "MSN2,MSN4", "HSF1,MSN2", "HSF1,MSN4", "HSF1,MSN2,MSN4"),
+                    c("#000000", "#ff0000", "#ffefd5", "#ffefd5", "#ffefd5",
+                      "#ffff66", "#000099", "#33cc33", "#ff9933"),
+                    mapping.type = "d")
+lockNodeDimensions(TRUE)
+setNodeSizeMapping("betweenness",
+                   c(min(betAll.norm), mean(betAll.norm), max(betAll.norm)),
+                   c(30, 60, 100))
+setNodeShapeMapping("node_shape",
+                    c("target", "regulator"),
+                    c("RECTANGLE", "OCTAGON"))
+
+setEdgeColorMapping("weight",
+                    c(min(as.numeric(cyto_in$reg)), mean(as.numeric(cyto_in$reg)), max(as.numeric(cyto_in$reg))),
+                    c("#cc0000", "#999999", "#0b5394"))
+
+setBackgroundColorDefault("#d3d3d3")
+setNodeBorderColorDefault("#000000")
+setNodeBorderWidthDefault(3)
+setNodeFontSizeDefault(20)
+setNodeLabelColorDefault("#000000")
+
+saveSession("yeast_heatshock_interactions_from_igraph")
+exportImage("yeast_heatshock_interactions_from_igraph")
+```
+
+![Interactions with HSF1 and MSN2/4 (red) in yeast.](yeast_heatshock_interactions_from_igraph.png)
 
 ### Analysis: Heatmap 
 
