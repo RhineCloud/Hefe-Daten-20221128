@@ -1,15 +1,13 @@
 ---
-title: "projectPBL_part3_4_5"
+title: "PBL Project Part 3, 4, and 5"
 author: "Yin Lei & Lisa Spindler"
-date: "2022-12-02"
+date: "`r Sys.Date()`"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = T, warning = F, message = F, cache = T)
 ```
-
-# TODO: go through chapter 8 for analysis!
 
 ## Read Data
 
@@ -256,10 +254,10 @@ To get an overview of the data, we will create a heatmap in which we look for th
 
 # TODO: what can we see in the heatmap, what sticks out?
 
-### Plot for fold changes with DEseq2 
 
-# TODO: do the plot
-$\to$ plot everything (facetwrap?) scatter to plot conditions against each other
+## Prepare data for scatter plots
+
+Here we summarize the replicates into one variable for each condition so that we can use their means for the scatter plots later on.
 
 ```{r}
 # revert nodes data frame to what it was when being read into cytoscape as a dataframe rather than via igraph
@@ -288,21 +286,77 @@ for (i in sample_mapping$sample) {
 # format(summarizedReplicates, scientific = FALSE)
 ```
 
+## Create some scatter matrices, first only with HSF1 and MSN2/4
+
 ```{r}
-# reformat data into long format
+# reformat data into long format, in case we need it later somewhere
 # summarizedReplicates <- summarizedReplicates %>%
 #  pivot_longer(cols = 2:21, names_to = "condition", values_to = "count")
 
-# meant to do a scatter matrix, but did not work (yet)
-# library(GGally)
+library(GGally)
 
-# summarizedReplicates %>%
-#   filter(heatshock_of_interest.gene_id == "YGL073W" ||
-#          heatshock_of_interest.gene_id == "YMR037C" ||
-#          heatshock_of_interest.gene_id == "YKL062W") %>%
-#   ggpairs()
+summarizedReplicates %>%
+  filter(summarizedReplicates$heatshock_of_interest.gene_id == "YGL073W" |
+         summarizedReplicates$heatshock_of_interest.gene_id == "YMR037C" |
+         summarizedReplicates$heatshock_of_interest.gene_id == "YKL062W") %>%
+  select(`25_0_Wildtype`, `25_0_HSF1.KD`, `25_0_MSN24.KO`, `25_0_Double.KD/KO`) %>%
+  ggpairs(title = "25°C at 0 min")
+
+summarizedReplicates %>%
+  filter(summarizedReplicates$heatshock_of_interest.gene_id == "YGL073W" |
+         summarizedReplicates$heatshock_of_interest.gene_id == "YMR037C" |
+         summarizedReplicates$heatshock_of_interest.gene_id == "YKL062W") %>%
+  select(`37_10_Wildtype`, `37_10_HSF1.KD`, `37_10_MSN24.KO`, `37_10_Double.KD/KO`) %>%
+  ggpairs(title = "37°C at 10 min")
+
+summarizedReplicates %>%
+  filter(summarizedReplicates$heatshock_of_interest.gene_id == "YGL073W" |
+         summarizedReplicates$heatshock_of_interest.gene_id == "YMR037C" |
+         summarizedReplicates$heatshock_of_interest.gene_id == "YKL062W") %>%
+  select(`37_30_Wildtype`, `37_30_HSF1.KD`, `37_30_MSN24.KO`, `37_30_Double.KD/KO`) %>%
+  ggpairs(title = "37°C at 30 min")
+
+summarizedReplicates %>%
+  filter(summarizedReplicates$heatshock_of_interest.gene_id == "YGL073W" |
+         summarizedReplicates$heatshock_of_interest.gene_id == "YMR037C" |
+         summarizedReplicates$heatshock_of_interest.gene_id == "YKL062W") %>%
+  select(`42_10_Wildtype`, `42_10_HSF1.KD`, `42_10_MSN24.KO`, `42_10_Double.KD/KO`) %>%
+  ggpairs(title = "42°C at 10 min")
+
+summarizedReplicates %>%
+  filter(summarizedReplicates$heatshock_of_interest.gene_id == "YGL073W" |
+         summarizedReplicates$heatshock_of_interest.gene_id == "YMR037C" |
+         summarizedReplicates$heatshock_of_interest.gene_id == "YKL062W") %>%
+  select(`42_30_Wildtype`, `42_30_HSF1.KD`, `42_30_MSN24.KO`, `42_30_Double.KD/KO`) %>%
+  ggpairs(title = "42°C at 30 min")
 ```
 
+## Some more scatter matrices, with all direct interactors of HSF1 and MSN2/4
+
+```{r}
+
+library(GGally)
+
+summarizedReplicates %>%
+  select(`25_0_Wildtype`, `25_0_HSF1.KD`, `25_0_MSN24.KO`, `25_0_Double.KD/KO`) %>%
+  ggpairs(title = "25°C at 0 min")
+
+summarizedReplicates %>%
+  select(`37_10_Wildtype`, `37_10_HSF1.KD`, `37_10_MSN24.KO`, `37_10_Double.KD/KO`) %>%
+  ggpairs(title = "37°C at 10 min")
+
+summarizedReplicates %>%
+  select(`37_30_Wildtype`, `37_30_HSF1.KD`, `37_30_MSN24.KO`, `37_30_Double.KD/KO`) %>%
+  ggpairs(title = "37°C at 30 min")
+
+summarizedReplicates %>%
+  select(`42_10_Wildtype`, `42_10_HSF1.KD`, `42_10_MSN24.KO`, `42_10_Double.KD/KO`) %>%
+  ggpairs(title = "42°C at 10 min")
+
+summarizedReplicates %>%
+  select(`42_30_Wildtype`, `42_30_HSF1.KD`, `42_30_MSN24.KO`, `42_30_Double.KD/KO`) %>%
+  ggpairs(title = "42°C at 30 min")
+```
 
 
 ## Use DESeq2 
