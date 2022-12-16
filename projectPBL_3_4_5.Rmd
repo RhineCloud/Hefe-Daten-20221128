@@ -154,7 +154,7 @@ saveSession("yeast_heatshock_interactions_from_df")
 exportImage("yeast_heatshock_interactions_from_df")
 ```
 
-![Interactions with HSF1 (yellow) and MSN2/4 (green) in yeast.](yeast_heatshock_interactions_from_df.png)
+![Interactions with <span style="background:#ffff00">HSF1 (yellow)</span>, <span style="background:#33ff00">MSN2 (green)</span> and <span style="background:#00ff33">MSN4 (green)</span> in yeast.](yeast_heatshock_interactions_from_df.png)
 
 This has been fun, but let's try another approach, like in Felix's Yeastract example on Moodle:
 
@@ -239,7 +239,7 @@ saveSession("yeast_heatshock_interactions_from_igraph")
 exportImage("yeast_heatshock_interactions_from_igraph")
 ```
 
-![Interactions with HSF1 and MSN2/4 (red) in yeast.](yeast_heatshock_interactions_from_igraph.png)
+![Interactions with HSF1 and MSN2/4 (major red octagons) in yeast: <span style="background:#ff0000">Regulators (red)</span>; <span style="background:#ffefd5">only with HSF1, or MSN2, or MSN4 (beige)</span>; <span style="background:#ffff66">with both MSN2 and MSN4 (yellow)</span>; <span style="background:#000099;color:#ffffff">with HSF1 and MSN2 (dark blue)</span>; <span style="background:#33cc33">with HSF1 and MSN4 (green)</span>; <span style="background:#ff9933">with HSF1, and MSN2, and MSN4 (orange)</span>.](yeast_heatshock_interactions_from_igraph.png)
 
 ### Analysis: Heatmap (PART 5)
 
@@ -358,6 +358,10 @@ summarizedReplicates %>%
   ggpairs(title = "42°C at 30 min")
 ```
 
+What's interesting to see is that at 25°C and 0 min, there's a very high correlation between all mutants, which makes sense since that's basically the baseline condition.
+At 37°C, both at 10 and 30 min, the correlations get gradually lower.
+There's almost no correlation between `HSF1.KD` and `MSN24.KO` at 42°C at 10 min and at 42°C at 30 min between the `Double.KD/KO` and `HSF1.KD`, as well as the `Double.KD/KO` and `MSN24.KO` mutants; possibly indicating that at least part of the heatshock response is going haywire in them.
+Finally, the `MSN24.KO` and the `HSF1.KD` mutants have a slightly inverse correlation at 42°C and 30 min, which could be linked to the pathways being affected in them being different, but still responding to the same heatshock stimulus.
 
 ## Use DESeq2 
 
