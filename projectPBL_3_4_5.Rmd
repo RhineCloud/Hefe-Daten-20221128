@@ -126,26 +126,27 @@ interactions <- flat_file %>%
     Regulation == "Negative" ~ -1,
     TRUE                     ~  0
   ))
+
+# reformat data
+regulators <- interactions %>%
+  select(Regulator_systematic, Regulator_standard) %>%
+  distinct() %>%
+  dplyr::rename(group = Regulator_systematic, id = Regulator_standard)
+targets <- interactions %>%
+  select(Target_systematic, Target_standard) %>%
+  distinct() %>%
+  dplyr::rename(group = Target_systematic, id = Target_standard)
+nodes <- dplyr::union(regulators, targets)
+edges <- interactions %>%
+  select(Regulator_standard, Target_standard, Regulation) %>%
+  dplyr::rename(source = Regulator_standard, target = Target_standard, weight = Regulation) %>%
+  distinct()
 ```
 
 ```{r, eval = F}
 library(RCy3)
 
 # directly create an interaction network from the data frame
-regulators <- interactions %>%
-  select(Regulator_systematic, Regulator_standard) %>%
-  distinct() %>%
-  rename(group = Regulator_systematic, id = Regulator_standard)
-targets <- interactions %>%
-  select(Target_systematic, Target_standard) %>%
-  distinct() %>%
-  rename(group = Target_systematic, id = Target_standard)
-nodes <- dplyr::union(regulators, targets)
-edges <- interactions %>%
-  select(Regulator_standard, Target_standard, Regulation) %>%
-  rename(source = Regulator_standard, target = Target_standard, weight = Regulation) %>%
-  distinct()
-
 createNetworkFromDataFrames(nodes, edges)
 setNodeColorBypass("HSF1", "#ffff00")
 setNodeColorBypass("MSN2", "#33ff00")
@@ -242,7 +243,7 @@ exportImage("yeast_heatshock_interactions_from_igraph")
 
 ![Interactions with HSF1 and MSN2/4 (red) in yeast.](yeast_heatshock_interactions_from_igraph.png)
 
-### Analysis: Heatmap 
+### Analysis: Heatmap (PART 5)
 
 To get an overview of the data, we will create a heatmap in which we look for the interactors with MSN2/4 and HSF1.
 
@@ -259,6 +260,50 @@ To get an overview of the data, we will create a heatmap in which we look for th
 
 # TODO: do the plot
 $\to$ plot everything (facetwrap?) scatter to plot conditions against each other
+
+```{r}
+# revert nodes data frame to what it was when being read into cytoscape as a dataframe rather than via igraph
+nodes <- dplyr::union(regulators, targets)
+
+# filter for genes that directly interact with hsf1 or msn2/4
+heatshock_of_interest <- complex_yeast_heatshock %>%
+  filter(gene_id %in% nodes$group)
+
+# create new data frame to collect the means of the replicates in each condition
+summarizedReplicates <- data.frame(heatshock_of_interest$gene_id)
+
+for (i in sample_mapping$sample) {
+  if (endsWith(i, "r1")) {
+    sample2 <- which(sample_mapping$sample == i) + 1
+    sample3 <- which(sample_mapping$sample == i) + 2
+    selectedCols <- heatshock_of_interest %>%
+      select(i, sample_mapping$sample[sample2], sample_mapping$sample[sample3])
+    meanColumn <- rowMeans(selectedCols[, c(1, 2, 3)])
+    summarizedReplicates <- cbind(summarizedReplicates, meanColumn)
+    names(summarizedReplicates)[names(summarizedReplicates) == "meanColumn"] <- str_sub(i, end = -4)
+  }
+}
+
+# for checking the values while coding, but not included in the doc
+# format(summarizedReplicates, scientific = FALSE)
+```
+
+```{r}
+# reformat data into long format
+# summarizedReplicates <- summarizedReplicates %>%
+#  pivot_longer(cols = 2:21, names_to = "condition", values_to = "count")
+
+# meant to do a scatter matrix, but did not work (yet)
+# library(GGally)
+
+# summarizedReplicates %>%
+#   filter(heatshock_of_interest.gene_id == "YGL073W" ||
+#          heatshock_of_interest.gene_id == "YMR037C" ||
+#          heatshock_of_interest.gene_id == "YKL062W") %>%
+#   ggpairs()
+```
+
+
 
 ## Use DESeq2 
 
